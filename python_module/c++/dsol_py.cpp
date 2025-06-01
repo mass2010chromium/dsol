@@ -1,3 +1,5 @@
+#define PY_ARRAY_UNIQUE_SYMBOL pbcvt_ARRAY_API
+
 #include <Python.h>
 #include "structmember.h"
 #include <Eigen/Core>
@@ -17,14 +19,15 @@ typedef struct {
     sv::dsol::MotionModel motion;
     sv::dsol::DirectOdometry odom;
 } Odometry;
+
 typedef struct {
+    PyObject_HEAD
     double track_time;
     double frame_time;
     double w[3];
     Sophus::SO3d integrate_rot;
     bool has_gyro;
     bool has_time;
-    PyObject_HEAD
     Odometry* refs;
 } OdometryObject;
 
@@ -148,7 +151,6 @@ Odometry_init(OdometryObject* self, PyObject* args, PyObject* kwds) {
     if (odom_cfg == NULL || sel_cfg == NULL || stereo_cfg == NULL || align_cfg == NULL || adjust_cfg == NULL) {
         return -1;
     }
-    return 0;
 
 
     {
@@ -225,6 +227,7 @@ Odometry_init(OdometryObject* self, PyObject* args, PyObject* kwds) {
     Eigen::Array4d fc;
     fc << camera_p[0], camera_p[5], camera_p[2], camera_p[6];
     odom.camera = {size, fc, -camera_p[3]/camera_p[0]};
+    printf("%f %f %f %f %f %f\n", width, height, camera_p[0], camera_p[5], camera_p[2], camera_p[6]);
 
     return 0;
 }
@@ -286,16 +289,13 @@ track_frame(OdometryObject* self, double t,
 }
 
 static PyObject*
-Odometry_input_monocular(OdometryObject* self, PyObject* args, Py_ssize_t nargs) {
+Odometry_input_monocular(OdometryObject* self, PyObject* const* args, Py_ssize_t nargs) {
     if (nargs != 2) {
         PyErr_SetString(PyExc_TypeError, "Invalid number of arguments. Expected: [image, timestamp]");
         return NULL;
     }
-    PyObject* img;
-    double t;
-    if (!PyArg_ParseTuple(args, "Od", &img, &t)) {
-        return NULL;
-    }
+    PyObject* img = args[0];
+    double t = PyFloat_AsDouble(args[1]);
     cv::Mat mat_left = pbcvt::fromNDArrayToMat(img);
     cv::Mat mat_right;
     cv::Mat mat_depth;
@@ -304,17 +304,14 @@ Odometry_input_monocular(OdometryObject* self, PyObject* args, Py_ssize_t nargs)
 }
 
 static PyObject*
-Odometry_input_stereo(OdometryObject* self, PyObject* args, Py_ssize_t nargs) {
+Odometry_input_stereo(OdometryObject* self, PyObject* const* args, Py_ssize_t nargs) {
     if (nargs != 3) {
         PyErr_SetString(PyExc_TypeError, "Invalid number of arguments. Expected: [left, right, timestamp]");
         return NULL;
     }
-    PyObject* img_left;
-    PyObject* img_right;
-    double t;
-    if (!PyArg_ParseTuple(args, "OOd", &img_left, &img_right, &t)) {
-        return NULL;
-    }
+    PyObject* img_left = args[0];
+    PyObject* img_right = args[1];
+    double t = PyFloat_AsDouble(args[2]);
     cv::Mat mat_left = pbcvt::fromNDArrayToMat(img_left);
     cv::Mat mat_right = pbcvt::fromNDArrayToMat(img_right);
     cv::Mat mat_depth;
@@ -323,17 +320,14 @@ Odometry_input_stereo(OdometryObject* self, PyObject* args, Py_ssize_t nargs) {
 }
 
 static PyObject*
-Odometry_input_depth(OdometryObject* self, PyObject* args, Py_ssize_t nargs) {
+Odometry_input_depth(OdometryObject* self, PyObject* const* args, Py_ssize_t nargs) {
     if (nargs != 3) {
         PyErr_SetString(PyExc_TypeError, "Invalid number of arguments. Expected: [rgb, depth, timestamp]");
         return NULL;
     }
-    PyObject* img_rgb;
-    PyObject* img_depth;
-    double t;
-    if (!PyArg_ParseTuple(args, "OOd", &img_rgb, &img_depth, &t)) {
-        return NULL;
-    }
+    PyObject* img_rgb = args[0];
+    PyObject* img_depth = args[1];
+    double t = PyFloat_AsDouble(args[2]);
     cv::Mat mat_left = pbcvt::fromNDArrayToMat(img_rgb);
     cv::Mat mat_right;
     cv::Mat mat_depth = pbcvt::fromNDArrayToMat(img_depth);
@@ -434,6 +428,7 @@ PyInit_dsol(void) {
         Py_DECREF(m);
         return NULL;
     }
+    import_array();
 
     return m;
 }

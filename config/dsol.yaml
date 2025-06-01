@@ -5,8 +5,8 @@ odom:
   min_track_ratio: 0.6
   vis_min_depth: 1.0
   reinit: false
-  init_depth: false
-  init_stereo: true
+  init_depth: true
+  init_stereo: false
   init_align: true
 select:
   sel_level: 1
@@ -40,9 +40,11 @@ adjust:
   max_iters: 5
   max_xs: 0.1
   affine: false
-  stereo: true
+  stereo: false
   c2: 2
   dof: 4
   max_outliers: 0
   grad_factor: 1.5
   min_depth: 0.1
+
+log: 0

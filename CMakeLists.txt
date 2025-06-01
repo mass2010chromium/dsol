@@ -19,16 +19,16 @@ enable_warnings(sv_options)
 include(Sanitizers)
 enable_sanitizers(sv_options)
 
-find_package(
-  catkin QUIET
-  COMPONENTS roscpp
-             tf2_ros
-             tf2_eigen
-             cv_bridge
-             image_transport
-             nav_msgs
-             sensor_msgs
-             visualization_msgs)
+#find_package(
+#  catkin QUIET
+#  COMPONENTS roscpp
+#             tf2_ros
+#             tf2_eigen
+#             cv_bridge
+#             image_transport
+#             nav_msgs
+#             sensor_msgs
+#             visualization_msgs)
 
 find_package(TBB REQUIRED)
 find_package(fmt REQUIRED)
