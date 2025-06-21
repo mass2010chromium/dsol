@@ -351,9 +351,10 @@ static PyObject*
 Odometry_get_pose(OdometryObject* self, void* _closure) {
     Eigen::Matrix<double, 3, 4> transform = self->refs->motion.T_last_.matrix3x4();
     double data[12] = {
-        transform(0, 0), transform(0, 1), transform(0, 2),
-        transform(1, 0), transform(1, 1), transform(1, 2),
-        transform(2, 0), transform(2, 1), transform(2, 2),
+        // NOTE: Klampt convention is column major.
+        transform(0, 0), transform(1, 0), transform(2, 0),
+        transform(0, 1), transform(1, 1), transform(2, 1),
+        transform(0, 2), transform(1, 2), transform(2, 2),
 
         transform(0, 3), transform(1, 3), transform(2, 3)
     };
@@ -369,7 +370,7 @@ Odometry_set_pose(PyObject* _self, PyObject* val, void* _closure) {
     if (parse_py_se3(data, val)) { return -1; }
     Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> rot(data);
     Eigen::Map<Eigen::Vector3d> trans(data+9);
-    self->refs->motion.T_last_ = Sophus::SE3d(rot, trans);
+    self->refs->motion.T_last_ = Sophus::SE3d(rot.transpose(), trans);
     self->integrate_rot = self->refs->motion.T_last_.so3();
     return 0;
 }

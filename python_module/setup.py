@@ -74,7 +74,8 @@ absl_libs = [
 "absl_log_severity",
 ]
 
-absl_objects = [ f"/usr/local/lib/lib{n}.a" for n in absl_libs ]
+#absl_objects = [ f"/usr/local/lib/lib{n}.a" for n in absl_libs ]
+absl_objects = [ f"/usr/lib/x86_64-linux-gnu/lib{n}.a" for n in absl_libs ]
 
 fmt_objects = ["/usr/local/lib/libfmt.a"]
 
@@ -91,7 +92,8 @@ dsol = Extension('dsol',
                     pyboostconverter_root,
                     numpy.get_include()
                  ] + opencv_include_dirs + eigen_include_dirs,
-                 libraries=['opencv_core', 'opencv_imgproc', 'opencv_highgui', 'glog', 'benchmark'],
+                 #libraries=['opencv_core', 'opencv_imgproc', 'opencv_highgui', 'glog', 'benchmark'],
+                 libraries=['opencv_core', 'opencv_imgproc', 'opencv_highgui', 'glog', 'benchmark', 'tbb'],
                  library_dirs=[
                     "/usr/local/lib",
                     #"/usr/local/lib/x86_64-linux-gnu",
