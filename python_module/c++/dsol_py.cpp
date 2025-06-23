@@ -386,7 +386,7 @@ static PyGetSetDef Odometry_getsetters[] = {
 };
 
 static PyTypeObject OdometryType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
+    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "dsol.Odometry",
     .tp_basicsize = sizeof(OdometryObject),
     .tp_itemsize = 0,

@@ -65,7 +65,12 @@ class SummaryBase {
     if (!stats.ok()) return;
     std::unique_lock lock{mutex_};
     //stats_dict_[name] += stats;
-    stats_dict_.find(name)->second += stats;
+    if (stats_dict_.find(name) != stats_dict_.end()) {
+      stats_dict_.find(name)->second += stats;
+    }
+    else {
+      stats_dict_.insert(std::make_pair(name, stats));
+    }
   }
 
   /// @brief Add new data to stats given name, create a new one if name is new.
@@ -73,7 +78,12 @@ class SummaryBase {
   void Add(std::string_view name, const T& val) {
     std::unique_lock lock{mutex_};
     //stats_dict_[name].Add(val);
-    stats_dict_.find(name)->second.Add(val);
+    if (stats_dict_.find(name) != stats_dict_.end()) {
+      stats_dict_.find(name)->second += val;
+    }
+    else {
+      stats_dict_.insert(std::make_pair(name, val));
+    }
   }
 
   /// @brief Get stats under name

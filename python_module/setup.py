@@ -32,10 +32,10 @@ dsol_sources = [os.path.join(dsol_root, 'sv', y) for y in [os.path.join('dsol', 
     "window.cpp",
 ]] + [os.path.join('util', y) for y in [
     "cmap.cpp",
-    "dataset.cpp",  # is this needed?
+    #"dataset.cpp",  # is this needed?
     "eigen.cpp",
     "math.cpp",
-    "metric.cpp",
+    #"metric.cpp",
     "ocv.cpp",
     "summary.cpp",
 ]]]
@@ -77,7 +77,8 @@ absl_libs = [
 #absl_objects = [ f"/usr/local/lib/lib{n}.a" for n in absl_libs ]
 absl_objects = [ f"/usr/lib/x86_64-linux-gnu/lib{n}.a" for n in absl_libs ]
 
-fmt_objects = ["/usr/local/lib/libfmt.a"]
+#fmt_objects = ["/usr/local/lib/libfmt.a"]
+fmt_objects = ["/usr/lib/x86_64-linux-gnu/libfmt.so"]
 
 import numpy
 
@@ -88,20 +89,23 @@ dsol = Extension('dsol',
                     f'pyboostcvconverter/src/pyboost_{cv_version}_converter.cpp'
                  ] + dsol_sources,
                  include_dirs=[
+                    "/opt/ros/humble/include",
                     dsol_root,
                     pyboostconverter_root,
                     numpy.get_include()
                  ] + opencv_include_dirs + eigen_include_dirs,
                  #libraries=['opencv_core', 'opencv_imgproc', 'opencv_highgui', 'glog', 'benchmark'],
-                 libraries=['opencv_core', 'opencv_imgproc', 'opencv_highgui', 'glog', 'benchmark', 'tbb'],
+                 #libraries=['opencv_core', 'opencv_imgproc', 'opencv_highgui', 'glog', 'benchmark', 'tbb'],
+                 libraries=['opencv_core', 'opencv_imgproc', 'opencv_highgui', 'glog', 'tbb'],
                  library_dirs=[
                     "/usr/local/lib",
                     #"/usr/local/lib/x86_64-linux-gnu",
                  ],
-                 extra_compile_args = ["--std=c++17", "-O3"],
+                 extra_compile_args = ["--std=c++20", "-O3"],
                  define_macros = all_macros,
                  extra_link_args=[],
-                 extra_objects=fmt_objects + absl_objects)
+                 #extra_objects=fmt_objects + absl_objects)
+                 extra_objects=fmt_objects)
 
 setup (name = 'DSOL',
        version = '1.0',

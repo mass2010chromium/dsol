@@ -26,7 +26,7 @@ namespace sv::dsol {
 /// w = [0, 2, 3, 4, 1]
 class KeyframeWindow {
  public:
-  KeyframeWindow() = default;
+  KeyframeWindow() {}
   explicit KeyframeWindow(int num_kfs) { Resize(num_kfs); }
   KeyframeWindow(int num_kfs, int num_levels, const cv::Size& grid_size) {
     Allocate(num_kfs, num_levels, grid_size);
@@ -69,11 +69,11 @@ class KeyframeWindow {
   const Keyframe& MargKf() const { return *ptrs_.back(); }
 
   KeyframePtrConstSpan keyframes() const noexcept {
-    return ptrs_;
+    return std::span(ptrs_.begin(), p_);
     //return absl::MakeConstSpan(ptrs_.data(), p_);
   }
   KeyframePtrSpan keyframes() noexcept {
-    return ptrs_;
+    return std::span(ptrs_.begin(), p_);
     //return absl::MakeSpan(ptrs_.data(), p_);
   }
 

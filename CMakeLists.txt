@@ -36,6 +36,7 @@ enable_sanitizers(sv_options)
 
 find_package(TBB REQUIRED)
 find_package(fmt REQUIRED)
+message(ERROR "THINGS: ${fmt_DIR}")
 find_package(glog REQUIRED)
 #find_package(absl REQUIRED)
 find_package(Boost REQUIRED) # circular buffer
