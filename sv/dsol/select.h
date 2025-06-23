@@ -1,6 +1,7 @@
 #pragma once
 
-#include <absl/types/span.h>
+//#include <absl/types/span.h>
+#include <span>
 
 #include "sv/dsol/image.h"
 #include "sv/dsol/point.h"
@@ -79,7 +80,8 @@ class PixelSelector {
   int Select(const ImagePyramid& grays, int gsize = 0);
 
   /// @brief Update projection mask from warped
-  int SetOccMask(absl::Span<const DepthPointGrid> points1s);
+  //int SetOccMask(absl::Span<const DepthPointGrid> points1s);
+  int SetOccMask(std::span<const DepthPointGrid> points1s);
 
   /// @brief Allocate storage for mask and grid
   /// @return number of bytes allocated

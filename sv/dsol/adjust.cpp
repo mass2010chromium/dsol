@@ -273,7 +273,8 @@ void BundleAdjuster::Update(KeyframePtrSpan keyframes, int level, int gsize) {
   const double scale = std::pow(1.2, -level);
 
   ParallelFor({0, static_cast<int>(keyframes.size()), gsize}, [&](int k) {
-    Keyframe& kf = *keyframes.at(k);
+    //Keyframe& kf = *keyframes.at(k);
+    Keyframe& kf = *keyframes[k];
     kf.UpdateState(block_.XpAt(k));
     kf.UpdatePoints(block_.xm, scale, gsize);
   });

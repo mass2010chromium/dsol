@@ -90,7 +90,7 @@ function(cc_library)
     target_compile_options(${_NAME} PRIVATE ${CC_LIB_COPTS})
 
     # INTERFACE libraries can't have the CXX_STANDARD property set
-    set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD 17)
+    set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD 20)
     set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
   else()
     # Generating header-only library
@@ -165,7 +165,7 @@ function(cc_binary)
     PUBLIC ${CC_BIN_DEPS}
     PRIVATE ${CC_BIN_LINKOPTS})
 
-  set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD 17)
+  set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD 20)
   set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 endfunction()
 
@@ -232,7 +232,7 @@ function(cc_test)
 
   target_link_libraries(${_NAME} PRIVATE GTest::GTest GTest::Main)
 
-  set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD 17)
+  set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD 20)
   set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
   add_test(NAME ${_NAME} COMMAND ${_NAME})
@@ -305,6 +305,6 @@ function(cc_bench)
     PUBLIC ${CC_BENCH_DEPS}
     PRIVATE ${CC_BENCH_LINKOPTS} benchmark::benchmark benchmark::benchmark_main)
 
-  set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD 17)
+  set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD 20)
   set_property(TARGET ${_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 endfunction()

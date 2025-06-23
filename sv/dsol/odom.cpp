@@ -1,6 +1,6 @@
 #include "sv/dsol/odom.h"
 
-#include <absl/strings/match.h>
+//#include <absl/strings/match.h>
 
 #include "sv/dsol/viz.h"
 #include "sv/util/logging.h"
@@ -19,15 +19,17 @@ StatsSummary ss{"dsol"};
 TimerSummary::StatsT SumStatsStartWith(const TimerSummary& tm,
                                        std::string_view start) {
   TimerSummary::StatsT stats;
-  absl::Duration time;
+  //absl::Duration time;
+  uint64_t time;
 
   for (const auto& kv : tm.dict()) {
-    if (absl::StartsWith(kv.first, start)) {
+    if (kv.first.starts_with(start)) {
       time += kv.second.last();
     }
   }
   // should at least have something
-  CHECK_NE(time, absl::ZeroDuration());
+  //CHECK_NE(time, absl::ZeroDuration());
+  CHECK_NE(time, 0);
   stats.Add(time);
   return stats;
 }

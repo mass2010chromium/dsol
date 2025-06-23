@@ -1,0 +1,33 @@
+launch:
+
+- arg: {'name': 'debug', 'default': 'false'}
+
+#- env:
+#    if: '$(var debug)'
+#    name: 'ROSCONSOLE_CONFIG_FILE'
+#    value: '$(find-pkg-share dsol)/launch/debug.conf'
+
+- arg: {'name': 'tbb', 'default': '0'}
+- arg: {'name': 'log', 'default': '5'}
+- arg: {'name': 'vis', 'default': '0'}
+
+- arg: {'name': 'camera', 'default': '/camera/camera'}
+- arg: {'name': 'use_depth', 'default': 'true'}
+
+- node:
+    pkg:  dsol
+    exec: sv_dsol_node_odom
+    name: dsol_odom
+    launch-prefix: "gdb -ex=r --args"
+    param:
+    - from: '$(find-pkg-share dsol)/config/dsol.yaml'
+    - from: '$(find-pkg-share dsol)/config/dsol_d455.yaml'
+    - {'name': 'tbb', 'value': '$(var tbb)'}
+    - {'name': 'log', 'value': '$(var log)'}
+    - {'name': 'vis', 'value': '$(var vis)'}
+    - {'name': 'use_depth', 'value': '$(var use_depth)'}
+    remap:
+    - {'from': 'cinfo1', 'to': '$(var camera)/color/camera_info'}
+    - {'from': 'image0', 'to': '$(var camera)/color/image_raw'}
+    - {'from': 'depth0', 'to': '$(var camera)/depth/image_rect_raw'}
+    - {'from': 'gyr', 'to': '$(var camera)/gyro/sample'}

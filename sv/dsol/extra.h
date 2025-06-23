@@ -4,7 +4,7 @@
 
 #include "sv/dsol/frame.h"
 #include "sv/dsol/select.h"
-#include "sv/util/dataset.h"
+//#include "sv/util/dataset.h"
 #include "sv/util/summary.h"
 
 namespace sv::dsol {
@@ -75,6 +75,7 @@ struct PlayCfg {
 };
 
 /// @brief
+/*
 struct PlayData {
   PlayData() = default;
   PlayData(const Dataset& dataset, const PlayCfg& cfg);
@@ -87,6 +88,7 @@ struct PlayData {
   std::vector<cv::Mat> depths;
   std::vector<Sophus::SE3d> poses;
 };
+ */
 
 void InitKfWithDepth(Keyframe& kf,
                      const Camera& camera,

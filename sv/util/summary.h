@@ -1,7 +1,9 @@
 #pragma once
 
-#include <absl/container/flat_hash_map.h>
-#include <absl/time/time.h>
+//#include <absl/container/flat_hash_map.h>
+//#include <absl/time/time.h>
+#include <unordered_map>
+#include <chrono>
 
 #include <mutex>
 #include <shared_mutex>
@@ -10,6 +12,7 @@
 #include "sv/util/stats.h"
 #include "sv/util/timer.h"
 
+/*
 /// Specialize numeric_limits for absl::Duration (follows integral type)
 /// https://codeyarns.com/tech/2015-07-02-max-min-and-lowest-in-c.html
 /// https://quuxplusone.github.io/blog/2021/10/27/dont-reopen-namespace-std/
@@ -19,6 +22,22 @@ struct std::numeric_limits<absl::Duration> {
   static constexpr absl::Duration min() { return absl::ZeroDuration(); }
   static constexpr absl::Duration lowest() { return absl::ZeroDuration(); }
   static constexpr absl::Duration max() { return absl::InfiniteDuration(); }
+};
+ */
+
+// C++20 feature for transparent comparisons
+// See: https://www.cppstories.com/2021/heterogeneous-access-cpp20/
+struct string_hash {
+  using is_transparent = void;
+  [[nodiscard]] size_t operator()(const char *txt) const {
+      return std::hash<std::string_view>{}(txt);
+  }
+  [[nodiscard]] size_t operator()(std::string_view txt) const {
+      return std::hash<std::string_view>{}(txt);
+  }
+  [[nodiscard]] size_t operator()(const std::string &txt) const {
+      return std::hash<std::string>{}(txt);
+  }
 };
 
 namespace sv {
@@ -45,14 +64,16 @@ class SummaryBase {
   void Merge(std::string_view name, const StatsT& stats) {
     if (!stats.ok()) return;
     std::unique_lock lock{mutex_};
-    stats_dict_[name] += stats;
+    //stats_dict_[name] += stats;
+    stats_dict_.find(name)->second += stats;
   }
 
   /// @brief Add new data to stats given name, create a new one if name is new.
   /// @details Thread-safe
   void Add(std::string_view name, const T& val) {
     std::unique_lock lock{mutex_};
-    stats_dict_[name].Add(val);
+    //stats_dict_[name].Add(val);
+    stats_dict_.find(name)->second.Add(val);
   }
 
   /// @brief Get stats under name
@@ -77,7 +98,8 @@ class SummaryBase {
       for (const auto& kv : stats_dict_) keys.push_back(kv.first);
       std::sort(keys.begin(), keys.end());
       for (const auto& key : keys) {
-        str += "\n" + ReportStats(key, stats_dict_.at(key));
+        //str += "\n" + ReportStats(key, stats_dict_[key]);
+        str += "\n" + ReportStats(key, stats_dict_.find(key)->second);
       }
     } else {
       for (const auto& kv : stats_dict_) {
@@ -96,7 +118,11 @@ class SummaryBase {
                                   const StatsT& stats) const = 0;
 
  protected:
-  using StatsDict = absl::flat_hash_map<std::string, StatsT>;
+  //using StatsDict = absl::flat_hash_map<std::string, StatsT>;
+
+  // C++20 feature for transparent comparisons
+  // See: https://www.cppstories.com/2021/heterogeneous-access-cpp20/
+  using StatsDict = std::unordered_map<std::string, StatsT, string_hash, std::equal_to<>>;
 
   std::string name_;                 // name of the manager
   StatsDict stats_dict_;             // use a dict to store stats
@@ -109,7 +135,8 @@ class StatsSummary final : public SummaryBase<double> {
   using SummaryBase::SummaryBase;
 
   /// @brief Get stats by name
-  StatsT& GetRef(std::string_view name) { return stats_dict_[name]; }
+  //StatsT& GetRef(std::string_view name) { return stats_dict_[name]; }
+  StatsT& GetRef(std::string_view name) { return stats_dict_.find(name)->second; }
 
   std::string ReportStats(const std::string& name,
                           const StatsT& stats) const override;
@@ -118,7 +145,9 @@ class StatsSummary final : public SummaryBase<double> {
 /// This is similar to Ceres Solver's ExecutionSummary class, where we record
 /// execution statistics (mainly time). Instead of simply record the time, we
 /// store a bunch of other useful statistics, like min, max, mean, etc.
-class TimerSummary final : public SummaryBase<absl::Duration> {
+//class TimerSummary final : public SummaryBase<absl::Duration> {
+//class TimerSummary final : public SummaryBase<std::chrono::duration<int64_t, std::nano>> {
+class TimerSummary final : public SummaryBase<int64_t> {
  public:
   /// A manual timer where user needs to call stop and commit explicitly
   /// Create multiple timers if you want to log time in multiple-threads

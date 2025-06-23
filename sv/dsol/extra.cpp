@@ -52,6 +52,7 @@ void TumFormatWriter::Write(int64_t i, const Sophus::SE3d& pose) {
   ofs_ << line << std::endl;
 }
 
+/*
 /// ============================================================================
 PlayData::PlayData(const Dataset& dataset, const PlayCfg& cfg)
     : frames(cfg.nframes), depths(cfg.nframes), poses(cfg.nframes) {
@@ -101,6 +102,7 @@ PlayData::PlayData(const Dataset& dataset, const PlayCfg& cfg)
   const auto intrin = dataset.Get(DataType::kIntrin, 0);
   camera = Camera::FromMat(frames.front().image_size(), intrin);
 }
+ */
 
 void InitKfWithDepth(Keyframe& kf,
                      const Camera& camera,

@@ -391,7 +391,8 @@ void KeyframeStatus::UpdateInfo(const FramePointGrid& points0) {
 }
 
 Keyframe& GetKfAt(KeyframePtrSpan keyframes, int k) {
-  auto* pkf = keyframes.at(k);
+  //auto* pkf = keyframes.at(k);
+  auto* pkf = keyframes[k];
   CHECK_NOTNULL(pkf);
   auto& kf = *pkf;
   CHECK(kf.Ok());
@@ -399,7 +400,8 @@ Keyframe& GetKfAt(KeyframePtrSpan keyframes, int k) {
 }
 
 const Keyframe& GetKfAt(KeyframePtrConstSpan keyframes, int k) {
-  const auto* pkf = keyframes.at(k);
+  //const auto* pkf = keyframes.at(k);
+  const auto* pkf = keyframes[k];
   CHECK_NOTNULL(pkf);
   const auto& kf = *pkf;
   CHECK(kf.Ok());

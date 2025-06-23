@@ -1,6 +1,7 @@
 #pragma once
 
-#include <absl/types/span.h>
+//#include <absl/types/span.h>
+#include <span>
 
 #include <sophus/se3.hpp>
 
@@ -213,8 +214,10 @@ struct Keyframe final : public Frame {
   bool Ok() const noexcept { return status_.pixels > 0; }
 };
 
-using KeyframePtrSpan = absl::Span<Keyframe*>;
-using KeyframePtrConstSpan = absl::Span<Keyframe const* const>;
+using KeyframePtrSpan = std::span<Keyframe*>;
+using KeyframePtrConstSpan = std::span<Keyframe const* const>;
+//using KeyframePtrSpan = absl::Span<Keyframe*>;
+//using KeyframePtrConstSpan = absl::Span<Keyframe const* const>;
 
 /// @brief Get a reference to the k-th keyframe, with not-null and ok checks
 Keyframe& GetKfAt(KeyframePtrSpan keyframes, int k);

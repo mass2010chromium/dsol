@@ -1,86 +1,82 @@
 #include "sv/dsol/node_util.h"
 
-#include "sv/ros1/msg_conv.h"
+#include "sv/ros/msg_conv.h"
 #include "sv/util/logging.h"
 
 namespace sv::dsol {
 
-namespace gm = geometry_msgs;
-namespace vm = visualization_msgs;
+namespace gm = geometry_msgs::msg;
+namespace vm = visualization_msgs::msg;
 static constexpr auto kNaNF = std::numeric_limits<float>::quiet_NaN();
 
-SelectCfg ReadSelectCfg(const ros::NodeHandle& pnh) {
+SelectCfg ReadSelectCfg(const std::shared_ptr<rclcpp::Node> node) {
   SelectCfg cfg;
-  pnh.getParam("sel_level", cfg.sel_level);
-  pnh.getParam("cell_size", cfg.cell_size);
-  pnh.getParam("min_grad", cfg.min_grad);
-  pnh.getParam("max_grad", cfg.max_grad);
-  pnh.getParam("nms_size", cfg.nms_size);
-  pnh.getParam("min_ratio", cfg.min_ratio);
-  pnh.getParam("max_ratio", cfg.max_ratio);
-  pnh.getParam("reselect", cfg.reselect);
+  node->get_parameter("sel_level");
+  node->get_parameter("cell_size", cfg.cell_size);
+  node->get_parameter("min_grad", cfg.min_grad);
+  node->get_parameter("max_grad", cfg.max_grad);
+  node->get_parameter("nms_size", cfg.nms_size);
+  node->get_parameter("min_ratio", cfg.min_ratio);
+  node->get_parameter("max_ratio", cfg.max_ratio);
+  node->get_parameter("reselect", cfg.reselect);
   return cfg;
 }
 
-DirectCfg ReadDirectCfg(const ros::NodeHandle& pnh) {
+DirectCfg ReadDirectCfg(const std::shared_ptr<rclcpp::Node> node) {
   DirectCfg cfg;
 
-  pnh.getParam("init_level", cfg.optm.init_level);
-  pnh.getParam("max_iters", cfg.optm.max_iters);
-  pnh.getParam("max_xs", cfg.optm.max_xs);
+  node->get_parameter("init_level", cfg.optm.init_level);
+  node->get_parameter("max_iters", cfg.optm.max_iters);
+  node->get_parameter("max_xs", cfg.optm.max_xs);
 
-  pnh.getParam("affine", cfg.cost.affine);
-  pnh.getParam("stereo", cfg.cost.stereo);
-  pnh.getParam("c2", cfg.cost.c2);
-  pnh.getParam("dof", cfg.cost.dof);
-  pnh.getParam("max_outliers", cfg.cost.max_outliers);
-  pnh.getParam("grad_factor", cfg.cost.grad_factor);
-  pnh.getParam("min_depth", cfg.cost.min_depth);
+  node->get_parameter("affine", cfg.cost.affine);
+  node->get_parameter("stereo", cfg.cost.stereo);
+  node->get_parameter("c2", cfg.cost.c2);
+  node->get_parameter("dof", cfg.cost.dof);
+  node->get_parameter("max_outliers", cfg.cost.max_outliers);
+  node->get_parameter("grad_factor", cfg.cost.grad_factor);
+  node->get_parameter("min_depth", cfg.cost.min_depth);
 
   return cfg;
 }
 
-StereoCfg ReadStereoCfg(const ros::NodeHandle& pnh) {
+StereoCfg ReadStereoCfg(const std::shared_ptr<rclcpp::Node> node) {
   StereoCfg cfg;
-  pnh.getParam("half_rows", cfg.half_rows);
-  pnh.getParam("half_cols", cfg.half_cols);
-  pnh.getParam("match_level", cfg.match_level);
-  pnh.getParam("refine_size", cfg.refine_size);
-  pnh.getParam("min_zncc", cfg.min_zncc);
-  pnh.getParam("min_depth", cfg.min_depth);
+  node->get_parameter("half_rows", cfg.half_rows);
+  node->get_parameter("half_cols", cfg.half_cols);
+  node->get_parameter("match_level", cfg.match_level);
+  node->get_parameter("refine_size", cfg.refine_size);
+  node->get_parameter("min_zncc", cfg.min_zncc);
+  node->get_parameter("min_depth", cfg.min_depth);
   return cfg;
 }
 
-OdomCfg ReadOdomCfg(const ros::NodeHandle& pnh) {
+OdomCfg ReadOdomCfg(const std::shared_ptr<rclcpp::Node> node) {
   OdomCfg cfg;
-  pnh.getParam("marg", cfg.marg);
-  pnh.getParam("num_kfs", cfg.num_kfs);
-  pnh.getParam("num_levels", cfg.num_levels);
-  pnh.getParam("min_track_ratio", cfg.min_track_ratio);
-  pnh.getParam("vis_min_depth", cfg.vis_min_depth);
+  node->get_parameter("marg", cfg.marg);
+  node->get_parameter("num_kfs", cfg.num_kfs);
+  node->get_parameter("num_levels", cfg.num_levels);
+  node->get_parameter("min_track_ratio", cfg.min_track_ratio);
+  node->get_parameter("vis_min_depth", cfg.vis_min_depth);
 
-  pnh.getParam("reinit", cfg.reinit);
-  pnh.getParam("init_depth", cfg.init_depth);
-  pnh.getParam("init_stereo", cfg.init_stereo);
-  pnh.getParam("init_align", cfg.init_align);
+  node->get_parameter("reinit", cfg.reinit);
+  node->get_parameter("init_depth", cfg.init_depth);
+  node->get_parameter("init_stereo", cfg.init_stereo);
+  node->get_parameter("init_align", cfg.init_align);
   return cfg;
 }
 
-Camera MakeCamera(const sensor_msgs::CameraInfo& cinfo_msg) {
+Camera MakeCamera(const sensor_msgs::msg::CameraInfo& cinfo_msg) {
   const cv::Size size(cinfo_msg.width, cinfo_msg.height);
-  const auto& P = cinfo_msg.P;
+  const auto& P = cinfo_msg.p;
   CHECK_GT(P[0], 0);
-  // P
-  // 0, 1,  2,  3
-  // 4, 5,  6,  7
-  // 8, 9, 10, 11
   Eigen::Array4d fc;
   fc << P[0], P[5], P[2], P[6];
   return {size, fc, -P[3] / P[0]};
 }
 
 void Keyframe2Cloud(const Keyframe& keyframe,
-                    sensor_msgs::PointCloud2& cloud,
+                    sensor_msgs::msg::PointCloud2& cloud,
                     double max_depth,
                     int offset) {
   const auto& points = keyframe.points();
@@ -99,7 +95,6 @@ void Keyframe2Cloud(const Keyframe& keyframe,
           reinterpret_cast<float*>(cloud.data.data() + i * cloud.point_step);
 
       const auto& point = points.at(gr, gc);
-      // Only draw points with max info and within max depth
       if (!point.InfoMax() || (1.0 / point.idepth()) > max_depth) {
         ptr[0] = ptr[1] = ptr[2] = kNaNF;
         continue;
@@ -107,7 +102,6 @@ void Keyframe2Cloud(const Keyframe& keyframe,
       CHECK(point.PixelOk());
       CHECK(point.DepthOk());
 
-      // transform to fixed frame
       const Eigen::Vector3f p_w = (keyframe.Twc() * point.pt()).cast<float>();
       const auto& patch = patches.at(gr, gc);
 
@@ -120,14 +114,13 @@ void Keyframe2Cloud(const Keyframe& keyframe,
 }
 
 void Keyframes2Cloud(const KeyframePtrConstSpan& keyframes,
-                     sensor_msgs::PointCloud2& cloud,
+                     sensor_msgs::msg::PointCloud2& cloud,
                      double max_depth) {
   if (keyframes.empty()) return;
 
   const auto num_kfs = static_cast<int>(keyframes.size());
   const auto grid_size = keyframes[0]->points().cvsize();
 
-  // Set all points to bad
   const auto total_size = num_kfs * grid_size.area();
   cloud.data.reserve(total_size * cloud.point_step);
   cloud.height = 1;
@@ -139,7 +132,6 @@ void Keyframes2Cloud(const KeyframePtrConstSpan& keyframes,
   }
 }
 
-/// ============================================================================
 
 void DrawAlignGraph(const Eigen::Vector3d& frame_pos,
                     const Eigen::Matrix3Xd& kfs_pos,
@@ -179,26 +171,26 @@ void DrawAlignGraph(const Eigen::Vector3d& frame_pos,
   }
 }
 
-PosePathPublisher::PosePathPublisher(ros::NodeHandle pnh,
+PosePathPublisher::PosePathPublisher(std::shared_ptr<rclcpp::Node> node,
                                      const std::string& name,
                                      const std::string& frame_id)
-    : frame_id_{frame_id},
-      pose_pub_{pnh.advertise<gm::PoseStamped>("pose_" + name, 1)},
-      path_pub_{pnh.advertise<nav_msgs::Path>("path_" + name, 1)} {
+    : node_(node), frame_id_(frame_id),
+      pose_pub_(node->create_publisher<gm::PoseStamped>("pose_" + name, 1)),
+      path_pub_(node->create_publisher<nav_msgs::msg::Path>("path_" + name, 1)) {
   path_msg_.poses.reserve(1024);
 }
 
-gm::PoseStamped PosePathPublisher::Publish(const ros::Time& time,
+gm::PoseStamped PosePathPublisher::Publish(const rclcpp::Time& time,
                                            const Sophus::SE3d& tf) {
   gm::PoseStamped pose_msg;
   pose_msg.header.stamp = time;
   pose_msg.header.frame_id = frame_id_;
   Sophus2Ros(tf, pose_msg.pose);
-  pose_pub_.publish(pose_msg);
+  pose_pub_->publish(pose_msg);
 
   path_msg_.header = pose_msg.header;
   path_msg_.poses.push_back(pose_msg);
-  path_pub_.publish(path_msg_);
+  path_pub_->publish(path_msg_);
   return pose_msg;
 }
 

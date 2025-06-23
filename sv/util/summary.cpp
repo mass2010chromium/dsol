@@ -36,7 +36,9 @@ TimerSummary::ManualTimer::ManualTimer(std::string name,
 void TimerSummary::ManualTimer::Stop(bool record) {
   timer_.Stop();
   if (record) {
-    stats_.Add(absl::Nanoseconds(timer_.Elapsed()));
+    //stats_.Add(absl::Nanoseconds(timer_.Elapsed()));
+    //stats_.Add(std::chrono::nanoseconds(timer_.Elapsed()));
+    stats_.Add(timer_.Elapsed());
   }
 }
 

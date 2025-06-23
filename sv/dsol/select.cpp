@@ -249,7 +249,8 @@ int PixelSelector::SelectPixels(const cv::Mat& gray,
       std::plus<>{});
 }
 
-int PixelSelector::SetOccMask(absl::Span<const DepthPointGrid> points1s) {
+//int PixelSelector::SetOccMask(absl::Span<const DepthPointGrid> points1s) {
+int PixelSelector::SetOccMask(std::span<const DepthPointGrid> points1s) {
   CHECK(!occ_mask_.empty());
   occ_mask_.setTo(0);
 

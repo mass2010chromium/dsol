@@ -1,6 +1,7 @@
 #pragma once
 
-#include <absl/container/inlined_vector.h>
+//#include <absl/container/inlined_vector.h>
+#include <vector>
 
 #include "sv/dsol/frame.h"
 
@@ -68,10 +69,12 @@ class KeyframeWindow {
   const Keyframe& MargKf() const { return *ptrs_.back(); }
 
   KeyframePtrConstSpan keyframes() const noexcept {
-    return absl::MakeConstSpan(ptrs_.data(), p_);
+    return ptrs_;
+    //return absl::MakeConstSpan(ptrs_.data(), p_);
   }
   KeyframePtrSpan keyframes() noexcept {
-    return absl::MakeSpan(ptrs_.data(), p_);
+    return ptrs_;
+    //return absl::MakeSpan(ptrs_.data(), p_);
   }
 
   /// @brief Add keyframe from frame
@@ -86,9 +89,10 @@ class KeyframeWindow {
   std::vector<Sophus::SE3d> GetAllPoses() const;
 
  private:
+  // Unused by std::span.
   int p_{};  // points to one past last frame
-  //  std::vector<Keyframe*> ptrs_;
-  absl::InlinedVector<Keyframe*, 8> ptrs_;
+  std::vector<Keyframe*> ptrs_;
+  //absl::InlinedVector<Keyframe*, 8> ptrs_;
   std::vector<Keyframe> kfs_;
 };
 
