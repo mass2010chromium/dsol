@@ -14,10 +14,10 @@
 
 namespace sv::dsol {
 
-SelectCfg ReadSelectCfg(const std::shared_ptr<rclcpp::Node> node);
-DirectCfg ReadDirectCfg(const std::shared_ptr<rclcpp::Node> node);
-StereoCfg ReadStereoCfg(const std::shared_ptr<rclcpp::Node> node);
-OdomCfg ReadOdomCfg(const std::shared_ptr<rclcpp::Node> node);
+SelectCfg ReadSelectCfg(const std::shared_ptr<rclcpp::Node> node, const std::string& root);
+DirectCfg ReadDirectCfg(const std::shared_ptr<rclcpp::Node> node, const std::string& root);
+StereoCfg ReadStereoCfg(const std::shared_ptr<rclcpp::Node> node, const std::string& root);
+OdomCfg ReadOdomCfg(const std::shared_ptr<rclcpp::Node> node, const std::string& root);
 
 Camera MakeCamera(const sensor_msgs::msg::CameraInfo& cinfo_msg);
 

@@ -121,6 +121,7 @@ NodeOdom::NodeOdom()
   // Old version of message_filters requires raw rmw_qos_profile_t
   rmw_qos_profile_t qos = {};
   qos.depth = 5;
+  std::shared_ptr<rclcpp::Node> ptr(this);
   std::shared_ptr<rclcpp::Node> node_p = shared_from_this();
   sub_image0_.subscribe(node_p, "image0", qos);
   sub_image1_.subscribe(node_p, "image1", qos);
@@ -130,17 +131,18 @@ NodeOdom::NodeOdom()
 }
 
 void NodeOdom::InitOdom() {
+  std::shared_ptr<rclcpp::Node> node_p = shared_from_this();
   {
-    auto cfg = ReadOdomCfg(create_sub_node("odom"));
+    auto cfg = ReadOdomCfg(node_p, "odom");
     this->get_parameter("tbb", cfg.tbb);
     this->get_parameter("log", cfg.log);
     this->get_parameter("vis", cfg.vis);
     odom_.Init(cfg);
   }
-  odom_.selector = PixelSelector(ReadSelectCfg(create_sub_node("select")));
-  odom_.matcher = StereoMatcher(ReadStereoCfg(create_sub_node("stereo")));
-  odom_.aligner = FrameAligner(ReadDirectCfg(create_sub_node("align")));
-  odom_.adjuster = BundleAdjuster(ReadDirectCfg(create_sub_node("adjust")));
+  odom_.selector = PixelSelector(ReadSelectCfg(node_p, "select"));
+  odom_.matcher = StereoMatcher(ReadStereoCfg(node_p, "stereo"));
+  odom_.aligner = FrameAligner(ReadDirectCfg(node_p, "align"));
+  odom_.adjuster = BundleAdjuster(ReadDirectCfg(node_p, "adjust"));
   odom_.cmap = GetColorMap(this->declare_parameter("cm", "jet"));
   RCLCPP_INFO_STREAM(rclcpp::get_logger("DEFAULT_LOGGER"), odom_.Repr());
 

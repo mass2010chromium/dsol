@@ -9,60 +9,60 @@ namespace gm = geometry_msgs::msg;
 namespace vm = visualization_msgs::msg;
 static constexpr auto kNaNF = std::numeric_limits<float>::quiet_NaN();
 
-SelectCfg ReadSelectCfg(const std::shared_ptr<rclcpp::Node> node) {
+SelectCfg ReadSelectCfg(const std::shared_ptr<rclcpp::Node> node, const std::string& root) {
   SelectCfg cfg;
-  node->get_parameter("sel_level");
-  node->get_parameter("cell_size", cfg.cell_size);
-  node->get_parameter("min_grad", cfg.min_grad);
-  node->get_parameter("max_grad", cfg.max_grad);
-  node->get_parameter("nms_size", cfg.nms_size);
-  node->get_parameter("min_ratio", cfg.min_ratio);
-  node->get_parameter("max_ratio", cfg.max_ratio);
-  node->get_parameter("reselect", cfg.reselect);
+  node->get_parameter(root + ".sel_level", cfg.sel_level);
+  node->get_parameter(root + ".cell_size", cfg.cell_size);
+  node->get_parameter(root + ".min_grad", cfg.min_grad);
+  node->get_parameter(root + ".max_grad", cfg.max_grad);
+  node->get_parameter(root + ".nms_size", cfg.nms_size);
+  node->get_parameter(root + ".min_ratio", cfg.min_ratio);
+  node->get_parameter(root + ".max_ratio", cfg.max_ratio);
+  node->get_parameter(root + ".reselect", cfg.reselect);
   return cfg;
 }
 
-DirectCfg ReadDirectCfg(const std::shared_ptr<rclcpp::Node> node) {
+DirectCfg ReadDirectCfg(const std::shared_ptr<rclcpp::Node> node, const std::string& root) {
   DirectCfg cfg;
 
-  node->get_parameter("init_level", cfg.optm.init_level);
-  node->get_parameter("max_iters", cfg.optm.max_iters);
-  node->get_parameter("max_xs", cfg.optm.max_xs);
+  node->get_parameter(root + ".init_level", cfg.optm.init_level);
+  node->get_parameter(root + ".max_iters", cfg.optm.max_iters);
+  node->get_parameter(root + ".max_xs", cfg.optm.max_xs);
 
-  node->get_parameter("affine", cfg.cost.affine);
-  node->get_parameter("stereo", cfg.cost.stereo);
-  node->get_parameter("c2", cfg.cost.c2);
-  node->get_parameter("dof", cfg.cost.dof);
-  node->get_parameter("max_outliers", cfg.cost.max_outliers);
-  node->get_parameter("grad_factor", cfg.cost.grad_factor);
-  node->get_parameter("min_depth", cfg.cost.min_depth);
+  node->get_parameter(root + ".affine", cfg.cost.affine);
+  node->get_parameter(root + ".stereo", cfg.cost.stereo);
+  node->get_parameter(root + ".c2", cfg.cost.c2);
+  node->get_parameter(root + ".dof", cfg.cost.dof);
+  node->get_parameter(root + ".max_outliers", cfg.cost.max_outliers);
+  node->get_parameter(root + ".grad_factor", cfg.cost.grad_factor);
+  node->get_parameter(root + ".min_depth", cfg.cost.min_depth);
 
   return cfg;
 }
 
-StereoCfg ReadStereoCfg(const std::shared_ptr<rclcpp::Node> node) {
+StereoCfg ReadStereoCfg(const std::shared_ptr<rclcpp::Node> node, const std::string& root) {
   StereoCfg cfg;
-  node->get_parameter("half_rows", cfg.half_rows);
-  node->get_parameter("half_cols", cfg.half_cols);
-  node->get_parameter("match_level", cfg.match_level);
-  node->get_parameter("refine_size", cfg.refine_size);
-  node->get_parameter("min_zncc", cfg.min_zncc);
-  node->get_parameter("min_depth", cfg.min_depth);
+  node->get_parameter(root + ".half_rows", cfg.half_rows);
+  node->get_parameter(root + ".half_cols", cfg.half_cols);
+  node->get_parameter(root + ".match_level", cfg.match_level);
+  node->get_parameter(root + ".refine_size", cfg.refine_size);
+  node->get_parameter(root + ".min_zncc", cfg.min_zncc);
+  node->get_parameter(root + ".min_depth", cfg.min_depth);
   return cfg;
 }
 
-OdomCfg ReadOdomCfg(const std::shared_ptr<rclcpp::Node> node) {
+OdomCfg ReadOdomCfg(const std::shared_ptr<rclcpp::Node> node, const std::string& root) {
   OdomCfg cfg;
-  node->get_parameter("marg", cfg.marg);
-  node->get_parameter("num_kfs", cfg.num_kfs);
-  node->get_parameter("num_levels", cfg.num_levels);
-  node->get_parameter("min_track_ratio", cfg.min_track_ratio);
-  node->get_parameter("vis_min_depth", cfg.vis_min_depth);
+  node->get_parameter(root + ".marg", cfg.marg);
+  node->get_parameter(root + ".num_kfs", cfg.num_kfs);
+  node->get_parameter(root + ".num_levels", cfg.num_levels);
+  node->get_parameter(root + ".min_track_ratio", cfg.min_track_ratio);
+  node->get_parameter(root + ".vis_min_depth", cfg.vis_min_depth);
 
-  node->get_parameter("reinit", cfg.reinit);
-  node->get_parameter("init_depth", cfg.init_depth);
-  node->get_parameter("init_stereo", cfg.init_stereo);
-  node->get_parameter("init_align", cfg.init_align);
+  node->get_parameter(root + ".reinit", cfg.reinit);
+  node->get_parameter(root + ".init_depth", cfg.init_depth);
+  node->get_parameter(root + ".init_stereo", cfg.init_stereo);
+  node->get_parameter(root + ".init_align", cfg.init_align);
   return cfg;
 }
 
