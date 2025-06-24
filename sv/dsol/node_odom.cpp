@@ -73,9 +73,10 @@ struct NodeOdom : public rclcpp::Node {
   void InitRosIO();
 
   void Cinfo1Cb(const sm::CameraInfo& cinfo1_msg);
-  void StereoCb(const std::shared_ptr<sm::Image const>& image0_ptr,
-                const std::shared_ptr<sm::Image const>& image1_ptr);
-  void StereoDepthCb(const std::shared_ptr<sm::Image const>& image0_ptr,
+  
+  // image1 and depth0 are allowed to be null. If so, we will track either
+  // stereo only, or depth only, or monocular.
+  void TrackFrameCb(const std::shared_ptr<sm::Image const>& image0_ptr,
                      const std::shared_ptr<sm::Image const>& image1_ptr,
                      const std::shared_ptr<sm::Image const>& depth0_ptr);
 
@@ -151,14 +152,26 @@ void NodeOdom::InitOdom() {
 
 void NodeOdom::InitRosIO() {
   bool use_depth = this->declare_parameter("use_depth", false);
+  bool use_stereo = this->declare_parameter("use_stereo", true);
   if (use_depth) {
-    sync_stereo_depth_.emplace(sub_image0_, sub_image1_, sub_depth0_, 5);
-    sync_stereo_depth_->registerCallback(
-        std::bind(&NodeOdom::StereoDepthCb, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-  } else {
+    if (use_stereo) {
+        sync_stereo_depth_.emplace(sub_image0_, sub_image1_, sub_depth0_, 5);
+        sync_stereo_depth_->registerCallback(
+            std::bind(&NodeOdom::TrackFrameCb, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    }
+    else {
+        sync_stereo_.emplace(sub_image0_, sub_depth0_, 5);
+        sync_stereo_->registerCallback(
+            std::bind(&NodeOdom::TrackFrameCb, this, std::placeholders::_1, nullptr, std::placeholders::_2));
+    }
+  } else if (use_stereo) {
     sync_stereo_.emplace(sub_image0_, sub_image1_, 5);
     sync_stereo_->registerCallback(
-        std::bind(&NodeOdom::StereoCb, this, std::placeholders::_1, std::placeholders::_2));
+        std::bind(&NodeOdom::TrackFrameCb, this, std::placeholders::_1, std::placeholders::_2, nullptr));
+  }
+  else {
+    sub_image0_.registerCallback(
+        std::bind(&NodeOdom::TrackFrameCb, this, std::placeholders::_1, nullptr, nullptr));
   }
   sub_cinfo1_ = this->create_subscription<sm::CameraInfo>("cinfo1", 1, std::bind(&NodeOdom::Cinfo1Cb, this, std::placeholders::_1));
   sub_gyr_ = this->create_subscription<sm::Imu>("gyr", 200, std::bind(&NodeOdom::GyrCb, this, std::placeholders::_1));
@@ -172,8 +185,8 @@ void NodeOdom::InitRosIO() {
 void NodeOdom::Cinfo1Cb(const sm::CameraInfo& cinfo1_msg) {
   odom_.camera = MakeCamera(cinfo1_msg);
   RCLCPP_INFO_STREAM(rclcpp::get_logger("DEFAULT_LOGGER"), odom_.camera.Repr());
-  // TODO: destroy subscription
-  // sub_cinfo1_.shutdown();
+  // TODO: destroy subscription, reset shared pointer...?
+  sub_cinfo1_.reset();
 }
 
 void NodeOdom::AccCb(const sm::Imu& acc_msg) {}
@@ -183,17 +196,15 @@ void NodeOdom::GyrCb(const sm::Imu& gyr_msg) {
   gyrs_.push_back(gyr_msg);
 }
 
-void NodeOdom::StereoCb(const std::shared_ptr<sm::Image const>& image0_ptr,
-                        const std::shared_ptr<sm::Image const>& image1_ptr) {
-  StereoDepthCb(image0_ptr, image1_ptr, nullptr);
-}
-
-void NodeOdom::StereoDepthCb(const std::shared_ptr<sm::Image const>& image0_ptr,
+void NodeOdom::TrackFrameCb(const std::shared_ptr<sm::Image const>& image0_ptr,
                              const std::shared_ptr<sm::Image const>& image1_ptr,
                              const std::shared_ptr<sm::Image const>& depth0_ptr) {
   const auto curr_header = image0_ptr->header;
   const auto image0 = cb::toCvShare(image0_ptr)->image;
-  const auto image1 = cb::toCvShare(image1_ptr)->image;
+  cv::Mat image1;
+  if (image1_ptr) {
+    image1 = cb::toCvShare(image1_ptr)->image;
+  }
 
   cv::Mat depth0;
   if (depth0_ptr) {
@@ -201,8 +212,8 @@ void NodeOdom::StereoDepthCb(const std::shared_ptr<sm::Image const>& image0_ptr,
     depth0.convertTo(depth0, CV_32FC1, 0.001);  // 16bit in millimeters
   }
 
-  static rclcpp::Time prev_stamp;
-  rclcpp::Time curr_time(curr_header.stamp.sec, curr_header.stamp.nanosec);
+  static rclcpp::Time prev_stamp(0, 0, RCL_ROS_TIME);
+  rclcpp::Time curr_time(curr_header.stamp.sec, curr_header.stamp.nanosec, RCL_ROS_TIME);
   const rclcpp::Duration delta_duration =
       prev_stamp.nanoseconds() == 0 ? rclcpp::Duration(0, 0) : curr_time - prev_stamp;
   const auto dt = delta_duration.seconds();
@@ -222,7 +233,7 @@ void NodeOdom::StereoDepthCb(const std::shared_ptr<sm::Image const>& image0_ptr,
     int n_imus = 0;
     for (size_t i = 0; i < gyrs_.size(); ++i) {
       const auto& imu = gyrs_[i];
-      const rclcpp::Time imu_stamp(imu.header.stamp.sec, imu.header.stamp.nanosec);
+      const rclcpp::Time imu_stamp(imu.header.stamp.sec, imu.header.stamp.nanosec, RCL_ROS_TIME);
       if (imu_stamp <= prev_stamp) continue;
       if (imu_stamp > curr_time) continue;
 
@@ -232,7 +243,7 @@ void NodeOdom::StereoDepthCb(const std::shared_ptr<sm::Image const>& image0_ptr,
       }
       else {
         const auto prev_header_stamp = gyrs_.at(i-1).header.stamp;
-        prev_imu_stamp = rclcpp::Time(prev_header_stamp.sec, prev_header_stamp.nanosec);
+        prev_imu_stamp = rclcpp::Time(prev_header_stamp.sec, prev_header_stamp.nanosec, RCL_ROS_TIME);
       }
       const double dt_imu = (imu_stamp - prev_imu_stamp).seconds();
       CHECK_GT(dt_imu, 0);

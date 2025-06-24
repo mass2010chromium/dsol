@@ -18,8 +18,8 @@ launch:
     pkg:  dsol
     exec: sv_dsol_node_odom
     name: dsol_odom
-    #launch-prefix: "gdb -ex=r --args"
-    launch-prefix: "valgrind --vgdb=full --vgdb-error=0"
+    #launch-prefix: "xterm -e gdb --args"
+    #launch-prefix: "valgrind --vgdb=full --vgdb-error=0"
     param:
     - from: '$(find-pkg-share dsol)/config/dsol_ros.yaml'
     - from: '$(find-pkg-share dsol)/config/dsol_d455.yaml'
@@ -30,5 +30,6 @@ launch:
     remap:
     - {'from': 'cinfo1', 'to': '$(var camera)/color/camera_info'}
     - {'from': 'image0', 'to': '$(var camera)/color/image_raw'}
+    #- {'from': 'image1', 'to': '$(var camera)/infra2/image_rect_raw'}
     - {'from': 'depth0', 'to': '$(var camera)/depth/image_rect_raw'}
     - {'from': 'gyr', 'to': '$(var camera)/gyro/sample'}

@@ -1,5 +1,7 @@
 dsol_odom:
   ros__parameters:
+    use_depth: true
+    use_stereo: false
     odom:
       marg: false
       num_kfs: 4
