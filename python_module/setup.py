@@ -2,13 +2,12 @@ from setuptools import setup, Extension
 
 all_macros = [('PYTHON', None), ('GOOGLE_STRIP_LOG', 1)]
 
-# TODO: Should this be auto detected?
+# NOTE: this code only works with cv4
 cv_version = "cv4"
 
 import os
 file_dir = os.path.dirname(os.path.abspath(__file__))
 dsol_root = os.path.normpath(os.path.join(file_dir, '..'))
-pyboostconverter_root = os.path.join(file_dir, 'pyboostcvconverter', 'include')
 # OpenCV likes to be in /usr/include/opencv4/opencv2 :doom:
 opencv_include_dirs = ['/usr/include/opencv4']
 # Eigen also likes to be in /usr/include/eigen3/Eigen
@@ -86,12 +85,11 @@ import numpy
 dsol = Extension('dsol',
                  sources = [
                     'c++/dsol_py.cpp',
-                    f'pyboostcvconverter/src/pyboost_{cv_version}_converter.cpp'
+                    'c++/pyboost_cv4_converter.cpp'
                  ] + dsol_sources,
                  include_dirs=[
                     "/opt/ros/humble/include",
                     dsol_root,
-                    pyboostconverter_root,
                     numpy.get_include()
                  ] + opencv_include_dirs + eigen_include_dirs,
                  #libraries=['opencv_core', 'opencv_imgproc', 'opencv_highgui', 'glog', 'benchmark'],

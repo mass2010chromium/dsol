@@ -3,7 +3,7 @@
 #include <Python.h>
 #include "structmember.h"
 #include <Eigen/Core>
-#include <pyboostcvconverter/pyboostcvconverter.hpp>
+#include "pyboostcvconverter.hpp"
 #include <sophus/so3.hpp>
 #include <sophus/se3.hpp>
 

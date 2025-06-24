@@ -3,8 +3,9 @@ project(dsol)
 
 find_package(ament_cmake REQUIRED)
 
-# This is being set in CMakeHelpers.cmake
+# The c++ version is also being set in CMakeHelpers.cmake
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 --verbose")
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
