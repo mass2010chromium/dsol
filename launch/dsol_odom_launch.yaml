@@ -18,9 +18,10 @@ launch:
     pkg:  dsol
     exec: sv_dsol_node_odom
     name: dsol_odom
-    launch-prefix: "gdb -ex=r --args"
+    #launch-prefix: "gdb -ex=r --args"
+    launch-prefix: "valgrind --vgdb=full --vgdb-error=0"
     param:
-    - from: '$(find-pkg-share dsol)/config/dsol.yaml'
+    - from: '$(find-pkg-share dsol)/config/dsol_ros.yaml'
     - from: '$(find-pkg-share dsol)/config/dsol_d455.yaml'
     - {'name': 'tbb', 'value': '$(var tbb)'}
     - {'name': 'log', 'value': '$(var log)'}
